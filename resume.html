@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume | Syed Mohammad Hassan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation for easy access to thematic sections (Home, Skills, Experience, Projects, Education). This structure is intuitive for recruiters. Key interactions include a filterable skills section with a radar chart for visual comparison and clickable cards for experience/projects to reveal details on demand, preventing information overload. -->
+    <!-- Visualization & Content Choices: Skills -> Goal: Compare/Organize -> Viz: Radar Chart (Chart.js) & Filterable List (JS) -> Interaction: Click filters to show/hide skill groups, providing a focused view. Experience/Projects -> Goal: Organize/Inform -> Viz: Timeline & Card Grid (HTML/Tailwind) -> Interaction: Click to expand/show modal with details, allowing for progressive disclosure of information. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #A0522D;
+        }
+        .skill-btn {
+            transition: all 0.3s ease;
+        }
+        .skill-btn.active {
+            background-color: #A0522D;
+            color: #FFFFFF;
+        }
+        .project-card, .timeline-item {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .project-card:hover, .timeline-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-gray-800">Syed M. Hassan</div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link font-medium">Home</a>
+                <a href="#experience" class="nav-link font-medium">Experience</a>
+                <a href="#skills" class="nav-link font-medium">Skills</a>
+                <a href="#projects" class="nav-link font-medium">Projects</a>
+                <a href="#education" class="nav-link font-medium">Education</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#home" class="block py-2 px-4 text-sm nav-link">Home</a>
+            <a href="#experience" class="block py-2 px-4 text-sm nav-link">Experience</a>
+            <a href="#skills" class="block py-2 px-4 text-sm nav-link">Skills</a>
+            <a href="#projects" class="block py-2 px-4 text-sm nav-link">Projects</a>
+            <a href="#education" class="block py-2 px-4 text-sm nav-link">Education</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        
+        <section id="home" class="min-h-[80vh] flex flex-col justify-center items-center text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-800 leading-tight">Syed Mohammad Hassan</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-600">Software Developer | Data Analyst</p>
+            <p class="mt-6 max-w-3xl text-gray-700">
+                Driven Software Developer with a strong foundation in data analysis and application development, proficient in **SQL**, **JavaScript**, and **Python**. Demonstrated ability to build applications from design to deployment, and to leverage data to drive key business insights. Eager to apply my technical skills to support digital transformation and data platform initiatives at Capgemini.
+            </p>
+            <div class="mt-8 flex space-x-4">
+                <a href="mailto:sayedhassank4@gmail.com" class="bg-amber-800 text-white px-6 py-3 rounded-full font-medium hover:bg-amber-900 transition-colors">Contact Me</a>
+                <a href="https://www.linkedin.com/in/syed-hassan2k2" target="_blank" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-full font-medium hover:bg-gray-300 transition-colors">LinkedIn</a>
+            </div>
+        </section>
+
+        <section id="experience" class="py-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Professional Experience</h2>
+            <div class="relative max-w-3xl mx-auto">
+                <div class="absolute left-1/2 w-0.5 h-full bg-gray-300 transform -translate-x-1/2"></div>
+                <div id="experience-container" class="space-y-12"></div>
+            </div>
+        </section>
+
+        <section id="skills" class="py-20 bg-white rounded-2xl shadow-lg">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Technical Skills</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">A visual representation of my core competencies, complemented by a detailed list of my technical skills. Use the filters to explore my expertise in different areas.</p>
+            <div class="chart-container">
+                <canvas id="skillsChart"></canvas>
+            </div>
+            <div class="text-center my-12">
+                <div id="skill-filters" class="flex flex-wrap justify-center gap-2 md:gap-4"></div>
+            </div>
+            <div id="skill-list" class="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-center"></div>
+        </section>
+
+        <section id="projects" class="py-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Projects</h2>
+            <div id="projects-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </section>
+
+        <section id="education" class="py-20">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Education & Certifications</h2>
+            <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-gray-700">Education</h3>
+                    <div id="education-container" class="space-y-6"></div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-gray-700">Certifications</h3>
+                    <div id="certifications-container" class="space-y-4"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-6">
+        <p>&copy; 2025 Syed Mohammad Hassan. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const appData = {
+                experience: [
+                    {
+                        role: 'Software Developer',
+                        company: 'Meena Shah Institute of Technology and Management (MSITM)',
+                        period: 'September 2024 – Present',
+                        details: [
+                            'Designed, developed, and deployed "Fee Sync," a college fee management software, leveraging **PHP** and **MySQL** to automate financial processes and improve reporting efficiency.',
+                            'Implemented dashboard analytics for administrators, providing key insights into financial trends.',
+                            'Built and integrated APIs for user authentication and data exchange, ensuring seamless integration with third-party services.',
+                            'Optimized **MySQL** queries and maintained scalable backend codebases to handle growing data volumes.',
+                            'Provided technical mentorship to students in software development, focusing on **JavaScript**, **Python**, and databases.'
+                        ]
+                    },
+                    {
+                        role: 'Java Developer Intern',
+                        company: 'CodeSoft (Remote)',
+                        period: 'August 2023 – September 2023',
+                        details: [
+                            'Developed **Java-based applications** with a **MySQL** backend, focusing on robust data connectivity and business logic.',
+                            'Participated in API testing to identify and resolve performance and reliability issues.',
+                            'Implemented systematic debugging processes and optimized code to ensure scalable and efficient applications.'
+                        ]
+                    }
+                ],
+                skills: {
+                    'Digital Experience & Data Platforms': ['Familiarity with Adobe Analytics', 'Foundational knowledge of Adobe Launch', 'Experience with Big Query / Google SQL'],
+                    'Data & Analytics': ['SQL', 'Python', 'Tableau', 'MS Excel'],
+                    'Programming': ['Java', 'PHP', 'C/C++', 'JavaScript'],
+                    'Databases': ['MySQL (schema design, query optimization)'],
+                    'Tools & Concepts': ['Postman', 'Git', 'dataslayer', 'Data-driven Problem Solving']
+                },
+                projects: [
+                    {
+                        title: 'Portfolio Management System',
+                        description: 'Built using Java, Spring Boot, and MySQL to track and analyze financial investments.',
+                        details: [
+                            'Conducted thorough API testing for smooth modular integration.',
+                            'Ensured system reliability with regression and integration testing.'
+                        ],
+                        tags: ['Java', 'Spring Boot', 'API']
+                    },
+                    {
+                        title: 'Travel Management System',
+                        description: 'Java-based desktop application with a MySQL backend to manage bookings, customers, and trip schedules.',
+                        details: [
+                            'Designed user login, data validation, and printable itineraries to enhance user experience.',
+                            'Applied object-oriented design principles to ensure efficient database interaction using JDBC.'
+                        ],
+                        tags: ['Java', 'MySQL', 'Desktop App']
+                    },
+                    {
+                        title: 'Fee Sync (College Fee Management)',
+                        description: 'Developed using PHP and MySQL to automate fee collection and reporting processes at MSITM.',
+                        details: [
+                            'Implemented user authentication, role-based access, and dashboard analytics for administrators.',
+                            'Improved financial transparency and reduced manual errors in fee tracking.'
+                        ],
+                        tags: ['PHP', 'MySQL', 'Web Dev']
+                    }
+                ],
+                education: [
+                    {
+                        degree: 'Master of Computer Applications (MCA)',
+                        institution: 'Integral University, Lucknow',
+                        period: '2024 – Present'
+                    },
+                    {
+                        degree: 'Bachelor of Computer Application (BCA)',
+                        institution: 'Dr. Ram Manohar Lohia Avadh University, Ayodhya',
+                        period: '2020 – 2023'
+                    }
+                ],
+                certifications: [
+                    'Tata Group Data Analytics Job Simulation on Forage - August 2025',
+                    'Introduction to Software Testing – Simplilearn, 2024',
+                    'MTA: Introduction to Programming Using Python – Microsoft, June 2021',
+                    'Accenture Nordics – Developer Job Simulation – Forage, Dec 2023',
+                    'J.P. Morgan – Software Engineering Job Simulation – Forage, Jun 2023'
+                ]
+            };
+
+            const populateExperience = () => {
+                const container = document.getElementById('experience-container');
+                container.innerHTML = '';
+                appData.experience.forEach((job, index) => {
+                    const sideClass = index % 2 === 0 ? 'md:pr-8' : 'md:pl-8';
+                    const alignmentClass = index % 2 === 0 ? 'md:text-right' : 'md:text-left';
+                    const item = document.createElement('div');
+                    item.className = `relative timeline-item bg-white p-6 rounded-lg shadow-md ${sideClass}`;
+                    item.innerHTML = `
+                        <div class="absolute top-1/2 ${index % 2 === 0 ? 'right-0 md:-right-4' : 'left-0 md:-left-4'} w-8 h-8 bg-amber-800 rounded-full border-4 border-white transform -translate-y-1/2 ${index % 2 === 0 ? 'md:translate-x-1/2' : 'md:-translate-x-1/2'}"></div>
+                        <div class="${alignmentClass}">
+                            <p class="text-sm text-gray-500">${job.period}</p>
+                            <h3 class="text-xl font-bold text-gray-800 mt-1">${job.role}</h3>
+                            <p class="text-md font-medium text-gray-600">${job.company}</p>
+                            <ul class="mt-4 space-y-2 list-disc list-inside text-left">
+                                ${job.details.map(detail => `<li>${detail}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            };
+
+            const populateSkills = () => {
+                const filtersContainer = document.getElementById('skill-filters');
+                const listContainer = document.getElementById('skill-list');
+                const categories = Object.keys(appData.skills);
+
+                filtersContainer.innerHTML = `<button class="skill-btn active px-4 py-2 bg-gray-200 rounded-full" data-filter="All">All</button>` + 
+                    categories.map(category => `<button class="skill-btn px-4 py-2 bg-gray-200 rounded-full" data-filter="${category}">${category}</button>`).join('');
+
+                const renderSkills = (filter = 'All') => {
+                    listContainer.innerHTML = '';
+                    const skillsToRender = filter === 'All' ? Object.values(appData.skills).flat() : appData.skills[filter];
+                    skillsToRender.forEach(skill => {
+                        const skillEl = document.createElement('div');
+                        skillEl.className = 'bg-gray-100 p-3 rounded-md text-gray-700 font-medium';
+                        skillEl.textContent = skill;
+                        listContainer.appendChild(skillEl);
+                    });
+                };
+
+                filtersContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        document.querySelectorAll('.skill-btn').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        renderSkills(e.target.dataset.filter);
+                    }
+                });
+
+                renderSkills();
+            };
+
+            const populateProjects = () => {
+                const container = document.getElementById('projects-container');
+                container.innerHTML = '';
+                appData.projects.forEach(project => {
+                    const card = document.createElement('div');
+                    card.className = 'project-card bg-white p-6 rounded-lg shadow-md flex flex-col';
+                    card.innerHTML = `
+                        <h3 class="text-xl font-bold text-gray-800">${project.title}</h3>
+                        <p class="text-gray-600 mt-2 flex-grow">${project.description}</p>
+                        <ul class="mt-4 space-y-2 list-disc list-inside text-left">
+                            ${project.details.map(detail => `<li>${detail}</li>`).join('')}
+                        </ul>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            ${project.tags.map(tag => `<span class="inline-block bg-amber-100 text-amber-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            };
+
+            const populateEducationAndCerts = () => {
+                const eduContainer = document.getElementById('education-container');
+                eduContainer.innerHTML = '';
+                appData.education.forEach(edu => {
+                    const item = document.createElement('div');
+                    item.className = 'bg-white p-4 rounded-lg shadow-sm';
+                    item.innerHTML = `
+                        <p class="font-bold text-lg text-gray-800">${edu.degree}</p>
+                        <p class="text-gray-600">${edu.institution}</p>
+                        <p class="text-sm text-gray-500 mt-1">${edu.period}</p>
+                    `;
+                    eduContainer.appendChild(item);
+                });
+
+                const certContainer = document.getElementById('certifications-container');
+                certContainer.innerHTML = '';
+                appData.certifications.forEach(cert => {
+                    const item = document.createElement('p');
+                    item.className = 'text-gray-700';
+                    item.innerHTML = `<span class="text-amber-800 font-bold">✔</span> ${cert}`;
+                    certContainer.appendChild(item);
+                });
+            };
+
+            const setupSkillsChart = () => {
+                const ctx = document.getElementById('skillsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Digital Experience', 'Data & Analytics', 'Programming', 'Databases', 'Tools'],
+                        datasets: [{
+                            label: 'Skill Proficiency',
+                            data: [65, 85, 90, 80, 85],
+                            backgroundColor: 'rgba(160, 82, 45, 0.2)',
+                            borderColor: 'rgba(160, 82, 45, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(160, 82, 45, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(160, 82, 45, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                pointLabels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    },
+                                    color: '#4A4A4A'
+                                },
+                                ticks: {
+                                    backdropColor: 'transparent',
+                                    color: '#888',
+                                    stepSize: 20
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            };
+
+            const setupNavigation = () => {
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                const navLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('section');
+
+                window.addEventListener('scroll', () => {
+                    let current = '';
+                    sections.forEach(section => {
+                        const sectionTop = section.offsetTop;
+                        if (pageYOffset >= sectionTop - 60) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href').includes(current)) {
+                            link.classList.add('active');
+                        }
+                    });
+                });
+            };
+
+            populateExperience();
+            populateSkills();
+            populateProjects();
+            populateEducationAndCerts();
+            setupSkillsChart();
+            setupNavigation();
+        });
+    </script>
+</body>
+</html>
